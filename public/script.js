@@ -2,37 +2,10 @@ var room_id;
 var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 var local_stream;
 
+const socket = io()
 
-function createRoom(){    
-    console.log("Creating Room")
-    let room = document.getElementById("room-input").value;
-    if(room == " " || room == "")   {
-        alert("Please enter room number")
-        return;
-    }
-    room_id = room;
-    let peer = new Peer(room_id)
-    peer.on('open', (id)=>{
-        console.log("Peer Connected with ID: ", id)                
-        getUserMedia({
-            video: true, 
-            audio: true}, (stream)=>{
-            local_stream = stream;
-            setLocalStream(local_stream)
-        },(err)=>{
-            console.log(err)
-        })
-        
-    })
-    peer.on('call',(call)=>{        
-        call.answer(local_stream);
-        call.on('stream',(stream)=>{
-            setRemoteStream(stream)
-        })
-    })
-}
-
-function joinRoom(){
+function joinRoom(){  
+      
     console.log("Joining Room")
     let room = document.getElementById("room-input").value;
     if(room == " " || room == "")   {
@@ -40,23 +13,63 @@ function joinRoom(){
         return;
     }
     room_id = room;
+    socket.emit("roomId", room_id);
     
-    let peer = new Peer()
-    peer.on('open', (id)=>{
-        console.log("Connected with Id: "+id)
-        getUserMedia({video: true, audio: true}, (stream)=>{
-            local_stream = stream;
-            setLocalStream(local_stream)
+    socket.on('has_room', checkRoom => {        
+        if(checkRoom){
+            socket.emit('join_room', room_id,(check_enough) =>{
+                if(check_enough){
+                   console.log("đã đủ người")
+                }
+                else{
+                    let peer = new Peer()            
+                    console.log('peer join', peer);
+                    peer.on('open', (id)=>{                
+                        console.log("Connected with Id: "+id)                
+                        getUserMedia({video: true, audio: true}, (stream)=>{
+                            local_stream = stream;
+                            setLocalStream(local_stream)   
+                            let call = peer.call(room_id, stream)
+                            console.log("Call", call)
+                            call.on('stream', (stream)=>{
+                                setRemoteStream(stream);
+                            })
+                        }, (err)=>{
+                            console.log(err)
+                        })        
+                    })
+                }                
+            })            
             
-            let call = peer.call(room_id, stream)
-            call.on('stream', (stream)=>{
-                setRemoteStream(stream);
+        }
+        else{
+            let peer = new Peer(room_id)
+            socket.emit('create_room', room_id)
+            console.log('peer create', peer);
+            peer.on('open', (id)=>{
+                console.log("Peer Connected with ID: ", id)
+                getUserMedia({
+                    video: true, 
+                    audio: true}, (stream)=>{
+                    local_stream = stream;
+                    setLocalStream(local_stream)
+                },(err)=>{
+                    console.log(err)
+                })
+                
             })
-        }, (err)=>{
-            console.log(err)
-        })
+            peer.on('call',(call)=>{        
+                call.answer(local_stream);
+                call.on('stream',(stream)=>{
+                    setRemoteStream(stream)
+                })
+            })
+        }
+    });
 
-    })
+    
+    
+    
 }
 
 
