@@ -5,7 +5,7 @@ var local_stream;
 const socket = io()
 
 function joinRoom(){  
-      
+    $('#join-room').css("display","none");
     console.log("Joining Room")
     let room = document.getElementById("room-input").value;
     if(room == " " || room == "")   {
@@ -18,8 +18,13 @@ function joinRoom(){
     socket.on('has_room', checkRoom => {        
         if(checkRoom){
             socket.emit('join_room', room_id,(check_enough) =>{
-                if(check_enough){
-                   console.log("đã đủ người")
+                if(check_enough){                    
+                    $('#alert-enough').css("display","block");     
+                    $('#alert-enough').fadeOut(3000) 
+                    setTimeout(() => {
+                        location.reload()
+                    }, 2000);
+                    console.log("Joining Room loop")       
                 }
                 else{
                     let peer = new Peer()            
@@ -89,4 +94,5 @@ function setRemoteStream(stream) {
         remoteVideo.play()
     })    
 }
+
 
