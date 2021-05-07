@@ -28,11 +28,7 @@ function joinRoom(){
                     console.log("Joining Room loop")       
                 }
                 else{
-                    let peer = new Peer( {
-                        secure:true,
-                        host: 'https://sneaky-sneaky.herokuapp.com',
-                        port: 443
-                    })            
+                    let peer = new Peer()            
                     console.log('peer join', peer);
                     peer.on('open', (id)=>{                
                         console.log("Connected with Id: "+id)                
@@ -53,11 +49,7 @@ function joinRoom(){
             
         }
         else{
-            let peer = new Peer(room_id,{
-                secure:true,
-                host: 'https://sneaky-sneaky.herokuapp.com',
-                port: 443
-            })
+            let peer = new Peer(room_id)
             socket.emit('create_room', room_id)
             console.log('peer create', peer);
             peer.on('open', (id)=>{
