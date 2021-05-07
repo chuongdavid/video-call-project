@@ -4,6 +4,7 @@ var local_stream;
 
 const socket = io()
 
+
 function joinRoom(){  
     $('#join-room').css("display","none");
     console.log("Joining Room")
